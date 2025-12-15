@@ -21,6 +21,12 @@ class Settings(BaseSettings):
     # Redis (optional, for token blacklisting)
     REDIS_URL: Optional[str] = "redis://localhost:6379/0"
     
+    # OpenAI API Key (optional, for AI Queue Insights feature)
+    # If not provided, the system will use rule-based fallback analysis
+    OPENAI_API_KEY: Optional[str] = None
+    OPENAI_MODEL: str = "gpt-4o-mini"  # Default model for cost-effectiveness
+    OPENAI_MAX_TOKENS: int = 500  # Limit response length for insights
+    
     class Config:
         env_file = ".env"
         case_sensitive = True

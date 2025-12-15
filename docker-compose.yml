@@ -1,8 +1,9 @@
 services:
   web:
     build: .
+    container_name: final_is218_app_web
     ports:
-      - "8000:8000"
+      - "8004:8000"
     volumes:
       - .:/app
     environment:
@@ -15,16 +16,22 @@ services:
       ACCESS_TOKEN_EXPIRE_MINUTES: 30
       REFRESH_TOKEN_EXPIRE_DAYS: 7
       BCRYPT_ROUNDS: 12
+      # Optional: OpenAI API key for AI Queue Insights (uses rule-based fallback if not set)
+      # OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    # Production command: no --reload, uses workers from Dockerfile
     command: >
-      sh -c "uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+      sh -c "python -m app.database_init && uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2"
+    restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
     networks:
       - app-network
+      - web
 
   db:
     image: postgres:17
+    container_name: final_is218_app_db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -34,6 +41,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+    restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d fastapi_db"]
       interval: 10s
@@ -44,6 +52,7 @@ services:
 
   pgadmin:
     image: dpage/pgadmin4
+    container_name: final_is218_app_pgadmin
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@example.com
       PGADMIN_DEFAULT_PASSWORD: admin
@@ -51,6 +60,7 @@ services:
       - "5050:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
+    restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
@@ -66,3 +76,6 @@ volumes:
 networks:
   app-network:
     driver: bridge
+  # External network for Caddy reverse proxy
+  web:
+    external: true

@@ -1,0 +1,61 @@
+# Caddyfile Reference for calc.gerardherrera.dev
+
+# This is the recommended Caddyfile configuration for the FastAPI calculator app
+# Place this in your Caddy infrastructure project's Caddyfile
+
+calc.gerardherrera.dev {
+    # Reverse proxy to FastAPI container
+    # Container name MUST match docker-compose.yml (final_is218_app_web)
+    reverse_proxy final_is218_app_web:8000 {
+        # Health check endpoint
+        health_uri /health
+        health_interval 30s
+        health_timeout 5s
+        
+        # Connection settings for low-memory servers
+        flush_interval -1
+    }
+    
+    # Enable compression to reduce bandwidth
+    encode gzip
+    
+    # Security headers
+    header {
+        # HSTS
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        
+        # Prevent MIME sniffing
+        X-Content-Type-Options "nosniff"
+        
+        # Clickjacking protection
+        X-Frame-Options "SAMEORIGIN"
+        
+        # Referrer policy
+        Referrer-Policy "strict-origin-when-cross-origin"
+        
+        # Remove server header
+        -Server
+    }
+    
+    # Logging
+    log {
+        output file /var/log/caddy/calc.gerardherrera.dev.log {
+            roll_size 10mb
+            roll_keep 5
+            roll_keep_for 720h
+        }
+        format json
+        level INFO
+    }
+    
+    # Handle errors
+    handle_errors {
+        respond "{http.error.status_code} {http.error.status_text}"
+    }
+}
+
+# Alternative minimal configuration (if above doesn't work):
+# calc.gerardherrera.dev {
+#     reverse_proxy final_is218_app_web:8000
+#     encode gzip
+# }

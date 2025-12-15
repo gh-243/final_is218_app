@@ -48,7 +48,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center h-16">
         <!-- Brand / Logo -->
-        <div class="flex items-center">
+        <div class="flex items-center space-x-8">
           <a id="brandLink" href="{{ url_for('read_index') }}" class="flex items-center space-x-2">
             <!-- Calculator Icon -->
             <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -56,6 +56,28 @@
             </svg>
             <span class="text-xl font-bold text-white">Calculations App</span>
           </a>
+          
+          <!-- Navigation Menu (visible when logged in) -->
+          <nav id="mainNav" class="hidden space-x-4">
+            <a 
+              href="/dashboard" 
+              class="text-white hover:text-blue-200 transition-colors duration-200 text-sm font-medium flex items-center"
+            >
+              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+              </svg>
+              Calculator
+            </a>
+            <a 
+              href="/queue-insights" 
+              class="text-white hover:text-blue-200 transition-colors duration-200 text-sm font-medium flex items-center"
+            >
+              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+              </svg>
+              AI Queue Insights
+            </a>
+          </nav>
         </div>
   
         <!-- Right side: user greeting & logout -->
@@ -112,13 +134,25 @@
   <!-- Global Scripts -->
   <script>
   document.addEventListener('DOMContentLoaded', function() {
+    const token = localStorage.getItem('access_token');
+    
     // Brand link adjustment based on auth status
     const brandLink = document.getElementById('brandLink');
     if (brandLink) {
-      const token = localStorage.getItem('access_token');
       // If user is logged in, set the brand link to /dashboard
       if (token) {
         brandLink.href = '/dashboard';
+      }
+    }
+    
+    // Show/hide navigation menu based on auth status
+    const mainNav = document.getElementById('mainNav');
+    if (mainNav) {
+      if (token) {
+        mainNav.classList.remove('hidden');
+        mainNav.classList.add('flex');
+      } else {
+        mainNav.classList.add('hidden');
       }
     }
 
@@ -138,7 +172,6 @@
     const logoutBtn = document.getElementById('layoutLogoutBtn');
     if (logoutBtn) {
       // Only show logout button if user is logged in
-      const token = localStorage.getItem('access_token');
       if (!token) {
         logoutBtn.classList.add('hidden');
       } else {

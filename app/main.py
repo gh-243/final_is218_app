@@ -35,10 +35,12 @@ import uvicorn  # ASGI server for running FastAPI apps
 from app.auth.dependencies import get_current_active_user  # Authentication dependency
 from app.models.calculation import Calculation  # Database model for calculations
 from app.models.user import User  # Database model for users
+from app.models.queue_observation import QueueObservation, QueueInsight  # Queue insights models
 from app.schemas.calculation import CalculationBase, CalculationResponse, CalculationUpdate  # API request/response schemas
 from app.schemas.token import TokenResponse  # API token schema
 from app.schemas.user import UserCreate, UserResponse, UserLogin  # User schemas
 from app.database import Base, get_db, engine  # Database connection
+from app.routers import queue_insights  # Queue insights router
 
 
 # ------------------------------------------------------------------------------
@@ -78,6 +80,12 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Set up Jinja2 templates directory for HTML rendering
 templates = Jinja2Templates(directory="templates")
+
+# ------------------------------------------------------------------------------
+# Include Routers
+# ------------------------------------------------------------------------------
+# Register the queue insights router for AI Queue Insights feature
+app.include_router(queue_insights.router)
 
 
 # ------------------------------------------------------------------------------

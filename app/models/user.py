@@ -103,6 +103,16 @@ class User(Base):
                                back_populates="user", 
                                cascade="all, delete-orphan")  # Delete user's calculations when user is deleted
     
+    # Relationships - one-to-many with QueueObservation model
+    queue_observations = relationship("QueueObservation",
+                                     back_populates="user",
+                                     cascade="all, delete-orphan")  # Delete user's observations when user is deleted
+    
+    # Relationships - one-to-many with QueueInsight model
+    queue_insights = relationship("QueueInsight",
+                                 back_populates="user",
+                                 cascade="all, delete-orphan")  # Delete user's insights when user is deleted
+    
     def __init__(self, *args, **kwargs):
         """Initialize a new user, handling password hashing if provided."""
         if "hashed_password" in kwargs:
