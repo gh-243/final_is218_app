@@ -1,29 +1,32 @@
-fastapi>=0.120.1,<0.125.0
-uvicorn>=0.34.0,<0.40.0
+# --- Web API ---
+fastapi==0.115.8
+uvicorn[standard]==0.30.6
+python-multipart==0.0.20
+python-dotenv==1.0.1
+email-validator==2.2.0
+jinja2==3.1.5
 
-SQLAlchemy>=2.0,<3.0
-psycopg2-binary>=2.9,<3.0
+# --- HTTP client ---
+httpx==0.28.1
 
-pydantic>=2.10,<3.0
-pydantic-settings>=2.7,<3.0
+# --- Database ---
+SQLAlchemy==2.0.38
+psycopg2-binary==2.9.10
 
-python-dotenv>=1.0,<2.0
-python-multipart>=0.0.20,<0.1
-email-validator>=2.2,<3.0
+# --- Auth / Security ---
+cryptography==44.0.0
+python-jose==3.4.0
+passlib[bcrypt]==1.7.4
 
-passlib>=1.7,<2.0
-python-jose>=3.4,<4.0
-cryptography>=44.0,<46.0
+# --- Redis ---
+aioredis==2.0.1
 
-Jinja2>=3.1,<4.0
-requests>=2.32,<3.0
-tenacity>=9.0,<10.0
-Faker>=36.1,<37.0
+# --- Testing ---
+pytest==8.3.4
+pytest-cov==6.0.0
+coverage==7.6.11
+Faker==36.1.0
 
-# Optional: OpenAI for AI Queue Insights feature
-# The feature will use rule-based fallback if this is not installed
-openai>=1.0,<2.0
-
-pytest>=8.3,<9.0
-pytest-cov>=6.0,<7.0
-coverage>=7.6,<8.0
+# --- Browser testing (only if you truly use it in the container) ---
+playwright==1.50.0
+pydantic-settings==2.7.1
