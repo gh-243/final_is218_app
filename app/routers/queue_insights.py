@@ -23,7 +23,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
-from app.auth.dependencies import get_current_active_user
+from app.auth.dependencies import get_current_active_user, get_current_web_user
 from app.database import get_db
 from app.models.queue_observation import QueueObservation, QueueInsight
 from app.schemas.user import UserResponse
@@ -51,7 +51,6 @@ templates = Jinja2Templates(directory="templates")
 @router.get("", response_class=HTMLResponse, name="queue_insights_dashboard")
 async def queue_insights_dashboard(
     request: Request,
-    current_user: UserResponse = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -62,6 +61,12 @@ async def queue_insights_dashboard(
     - Latest generated insight
     - Buttons to add observations and generate insights
     """
+    # Get current user using web authentication (redirects to login if not authenticated)
+    try:
+        current_user = get_current_web_user(request)
+    except HTTPException:
+        # Not authenticated - redirect to login
+        return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
     # Fetch user's recent observations (last 30 days, most recent first)
     thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
     
@@ -92,12 +97,17 @@ async def queue_insights_dashboard(
 # ------------------------------------------------------------------------------
 @router.get("/new", response_class=HTMLResponse, name="queue_insights_new_form")
 async def queue_insights_new_form(
-    request: Request,
-    current_user: UserResponse = Depends(get_current_active_user)
+    request: Request
 ):
     """
     Display the form to create a new queue observation.
     """
+    # Get current user using web authentication (redirects to login if not authenticated)
+    try:
+        current_user = get_current_web_user(request)
+    except HTTPException:
+        # Not authenticated - redirect to login
+        return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
     return templates.TemplateResponse(
         "queue_form.html",
         {
@@ -118,7 +128,6 @@ async def queue_insights_create(
     number_of_patients: int = Form(...),
     average_wait_minutes: int = Form(...),
     notes: str = Form(None),
-    current_user: UserResponse = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -127,6 +136,12 @@ async def queue_insights_create(
     This route accepts form data and creates a database record
     scoped to the current user.
     """
+    # Get current user using web authentication (redirects to login if not authenticated)
+    try:
+        current_user = get_current_web_user(request)
+    except HTTPException:
+        # Not authenticated - redirect to login
+        return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
     try:
         # Parse the datetime string
         # Expected format: "2025-12-15T14:30" from datetime-local input
@@ -208,7 +223,6 @@ async def queue_insights_create(
 async def queue_insights_analyze(
     request: Request,
     days_back: int = Form(default=7),
-    current_user: UserResponse = Depends(get_current_active_user),
     db: Session = Depends(get_db),
     insights_service: QueueInsightsService = Depends(get_insights_service)
 ):
@@ -223,6 +237,12 @@ async def queue_insights_analyze(
     
     The insights service will use AI if available, or fall back to rules.
     """
+    # Get current user using web authentication (redirects to login if not authenticated)
+    try:
+        current_user = get_current_web_user(request)
+    except HTTPException:
+        # Not authenticated - redirect to login
+        return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
     try:
         # Validate days_back
         if days_back < 1 or days_back > 365:
