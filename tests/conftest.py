@@ -1,3 +1,4 @@
+import os
 import socket
 import subprocess
 import time
@@ -31,8 +32,11 @@ logger = logging.getLogger(__name__)
 # ======================================================================================
 fake = Faker()
 Faker.seed(12345)
-
-test_engine = get_engine(database_url=settings.DATABASE_URL)
+DATABASE_URL = os.getenv(
+    "TEST_DATABASE_URL",
+    settings.DATABASE_URL  # fallback for local dev
+)
+test_engine = get_engine(database_url=DATABASE_URL)
 TestingSessionLocal = get_sessionmaker(engine=test_engine)
 
 # ======================================================================================
