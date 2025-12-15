@@ -8,6 +8,21 @@ jobs:
   test_and_scan:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: fastapi_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d fastapi_db"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -15,12 +30,21 @@ jobs:
       - name: Build Docker image
         run: docker build -t final-app:test .
 
+      # ✅ Run tests with DB pointing to the GitHub Actions postgres service
       - name: Run tests
-        run: docker run --rm final-app:test pytest -q
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@postgres:5432/fastapi_db
+          TEST_DATABASE_URL: postgresql://postgres:postgres@postgres:5432/fastapi_db
+        run: |
+          docker run --rm \
+            --network ${{ job.container.network }} \
+            -e DATABASE_URL="$DATABASE_URL" \
+            -e TEST_DATABASE_URL="$TEST_DATABASE_URL" \
+            final-app:test pytest -q
 
-      - name: Security scan (Trivy)
+      - name: Trivy scan
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: final-app:test
           severity: CRITICAL,HIGH
-          exit-code: 0
+          exit-code: '1'
